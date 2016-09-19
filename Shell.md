@@ -310,6 +310,7 @@ shell 字符串截取的8种方法
         或者就是未用 `""` 引用的字符串本身,放到 `[]` 结构中。虽然一般情况下可以工作.
         但这是不安全的.习惯于使用""来测试字符串是一种好习惯.
 
++ 字符串长度
 
 ## 变量（环境变量）
 
@@ -387,6 +388,78 @@ shell中的赋值和操作默认都是字符串处理，在shell种进行数学�
         test@localhost$
         ```
 ## 数组（列表）
++ Array
+    Bash shell只支持一维数组，初始化时候不需要定义数组的大小，默认下标从0开始。
+    1. 语法格式
+        用括号表示，元素用`空格`分割开。
+        ```
+        name_array=(hello world)
+        ```
+    2. 赋值
+        ```
+        # 整体赋值
+        name_array=(hello world)
+        # 单个元素赋值
+        name_array[0]=hello
+        name_array[1]=world
+        ```
+    3. 读取数组元素
+        ```
+        #获取第 `n` 个元素
+        ${name_array[n]}
+        ```
+    4. 读取所有元素
+        使用@ 或 * 可以获取数组中的所有元素
+        ```
+        # 使用 `@`
+        echo "array number list:${name_array[@]}"
+        # 使用 `*`
+        echo "array number list:${name_array[*]}"
+        ```
+    5. 获取数组长度
+        类似于获取字符串长度，首先获取所有元素，然后再获取其长度
+        ```
+        echo "array size:${#name_array[@]}"
+        echo "array size:${#name_array[*]}"
+        ```
+    6. 实例Demo
+        ```
+        #!/bin/bash
+        name_array=(hello world)
+        echo "first:${name_array[0]}
+        echo "second:${name_array[1]}
+        name_array[1]=world!
+        echo "all:${name_array[@]}"
+        echo "all:${name_array[*]}"
+        echo "array size:${#name_array[@]}"
+        echo "array size:${#name_array[*]}"
+
+        array_list=(zero first second third forth fifth)
+        echo "array list:${array_list[*]}"
+        # 从下标 `2` 开始赋值，前两个下标为空；
+        array_list=([2]=second third forth fifth)
+        echo "array_list[0]:${array_list[0]}"
+        echo "array_list[1]:${array_list[1]}"
+        echo "array_list[2]:${array_list[2]}"
+        echo "array_list[3]:${array_list[3]}"
+        echo "array_list[4]:${array_list[4]}"
+        echo "array_list[5]:${array_list[5]}"
+        # 数组的长度是实际内容的长度，不是指下标的长度
+        echo "array_list size:${#array_list[*]}"
+        echo "array_list:${array_list[*]}"
+        # 采用 `for` 循环获取数组非空元素
+        for i in ${array_list[*]}
+        do
+            echo $i
+        done
+        # 同样可以指定任意元素的下标，不分先后
+        array_lis=([5]=fifth [1]=first [0]=zero [3]=third)
+        ```
+
++ Array 其它用法
+    1. 字符串操作  
+        数组可以使用字符串操作的操作符，意义一致；唯一的不同在于*所有的操作都是针对所有数组元素逐个进行的*，可以这么理解
+        > 数组是字符串的一个特例，数组中的每个元素都相当于字符串中的一个字符。
 
 
 ## 函数
@@ -443,8 +516,15 @@ shell 可以用户定义函数，然后在shell脚本中可以随便调用
 + 函数的返回值
     函数的返回值在很多地方都会用到，除了在前面提到的几点外，还可以使用下面几种方式。
     1. return 语句
+        1. 函数可以显示通过 `return` 返回 `0-255` 的整数，如果返回其它值，会得到错误提示：`numeric argument required`
+        2. `return` 返回值必须通过 `$?` 获取，紧跟在函数调用点之后
     2. 全局变量（环境变量）
+        1. 函数里面通过修改全局变量方式返回值
+        2. 函数调用后，可以在外部获取该全局变量
+        3. 全局变量在子进程中被修改，子进程的修改是无法反应到父进程中，需特别注意。特别是使用到管道命令时。
     3. echo 返回值
+        1. 通过命令 `echo` 作为最后一个命令，将返回值输出到控制台。这样就可以通过 `shell` 命令方式接住控制台输出。
+        2. 需要将多余的输出到控制台的信息重定向到 `/dev/null`，防止出现不必要的结果。
 
 
 ## 文件操作
@@ -453,3 +533,22 @@ shell 可以用户定义函数，然后在shell脚本中可以随便调用
 ## 多线程（进程）
 
 ## 其它常用操作
++ find 命令
++ tar 命令
+    1. 5个独立命令
+        - -c 建立压缩档案
+        - -x 解压档案
+        - -t 查看档案内容
+        - -r 向文档末尾增加文件，同名不覆盖
+        - -u 更新原压缩包文件；同名覆盖；若不存在，则追加
+    2. 可选参数
+        - -z：有gzip属性的
+        - -j：有bz2属性的
+        - -Z：有compress属性的
+        - -v：显示所有过程
+        - -O：将文件解开到标准输出
+    3. 必选参数  
+        -f: 使用档案名字，切记，这个参数是最后一个参数，后面只能接档案名。
++ grep 命令
++ cut 命令
+
