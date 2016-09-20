@@ -311,6 +311,8 @@ shell 字符串截取的8种方法
         但这是不安全的.习惯于使用""来测试字符串是一种好习惯.
 
 + 字符串长度
++ 字符串删除
+
 
 ## 变量（环境变量）
 
@@ -459,7 +461,130 @@ shell中的赋值和操作默认都是字符串处理，在shell种进行数学�
 + Array 其它用法
     1. 字符串操作  
         数组可以使用字符串操作的操作符，意义一致；唯一的不同在于*所有的操作都是针对所有数组元素逐个进行的*，可以这么理解
-        > 数组是字符串的一个特例，数组中的每个元素都相当于字符串中的一个字符。
+        > 数组是字符串的一个特例，数组中的每个元素都相当于字符串中的一个字符。  
+
+        - 截取数组部分元素，相当于取子串
+            ```
+            # 从下标 `n` 开始，取 `m` 个元素
+            ${array[*]:n:m}
+            # 从下标 `n` 开始，到最后一个元素
+            ${array[*]:n}
+            ```
+            Demo  
+            ```
+            #!/bin/bash
+            array_list=(zero first second third forth fifth)
+            echo "array_list[0]:${array_list[0]}"
+            echo "array_list[1]:${array_list[1]}"
+            echo "array_list[2]:${array_list[2]}"
+            echo "array_list[3]:${array_list[3]}"
+            echo "array_list[4]:${array_list[4]}"
+            echo "array_list[5]:${array_list[5]}"
+            echo "array_list size:${#array_list[*]}"
+            echo "array_list:${array_list[*]}"
+            echo "start index 0:${array_list[*]:0}"
+            echo "start index 2:${array_list[*]:2}"
+            echo "start index 3:${array_list[*]:3}"
+            echo "start index 1, length 2:${array_list[*]:1:2}"
+            ```
+            Out
+            ```
+            array_list[0]:zero
+            array_list[1]:first
+            array_list[2]:second
+            array_list[3]:third
+            array_list[4]:forth
+            array_list[5]:fifth
+            array_list size:6
+            array_list:zero first second third forth fifth
+            start index 0:zero first second third forth fifth
+            start index 2:second third forth fifth
+            start index 3:third forth fifth
+            start index 1, length 2:first second
+            ```
+        - 删除数组里面的元素
+            ```
+            # 按最小长度匹配target
+            ${array[*]#target}
+            # 按最大长度匹配target
+            ${array[*]##target}
+            ```
+            Demo
+            ```
+            #!/bin/bash
+            array_list=(zero first second third forth fifth)
+            echo "array_list[0]:${array_list[0]}"
+            echo "array_list[1]:${array_list[1]}"
+            echo "array_list[2]:${array_list[2]}"
+            echo "array_list[3]:${array_list[3]}"
+            echo "array_list[4]:${array_list[4]}"
+            echo "array_list[5]:${array_list[5]}"
+            echo "array_list size:${#array_list[*]}"
+            echo "array_list:${array_list[*]}"
+            echo "min:${array_list[*]#th*}"
+            echo "max:${array_list[*]##th*}"
+            ```
+            Out
+            ```
+            array_list[0]:zero
+            array_list[1]:first
+            array_list[2]:second
+            array_list[3]:third
+            array_list[4]:forth
+            array_list[5]:fifth
+            array_list size:6
+            array_list:zero first second third forth fifth
+            min:zero first second ird forth fifth
+            max:zero first second  forth fifth
+            ```
+        - 替换数组里面的元素
+
+            ```
+            ```
+            Demo
+            ```
+            #!/bin/bash
+            array_list=(zero first second third forth fifth)
+            echo "array_list[0]:${array_list[0]}"
+            echo "array_list[1]:${array_list[1]}"
+            echo "array_list[2]:${array_list[2]}"
+            echo "array_list[3]:${array_list[3]}"
+            echo "array_list[4]:${array_list[4]}"
+            echo "array_list[5]:${array_list[5]}"
+            echo "array_list size:${#array_list[*]}"
+            echo "array_list:${array_list[*]}"
+            echo "min:${array_list[*]/f*t/FT}"
+            echo "max:${array_list[*]//f*t/FT}"
+            ```
+            Out
+            ```
+            array_list[0]:zero
+            array_list[1]:first
+            array_list[2]:second
+            array_list[3]:third
+            array_list[4]:forth
+            array_list[5]:fifth
+            array_list size:6
+            array_list:zero first second third forth fifth
+            min:zero FT second third FTh FTh
+            max:zero FT second third FTh FTh
+            ```
+    2. 从外部读取数据到数组
+        使用 `read -a array` 可以将读到的值存到 `array` 数组
+        ```
+        #!/bin/bash
+        echo -e "Pls input name list, separated by SPACE"
+        read -a name_list
+        echo "========================"
+        for i in ${name_list[*]}
+        do
+            echo "${i}"
+        done
+        echo "name list size:${#name_list[*]}"
+        ```
+    3. 数组的拼接
+        
+    4. 用数组实现简单数据结构
 
 
 ## 函数
@@ -534,6 +659,87 @@ shell 可以用户定义函数，然后在shell脚本中可以随便调用
 
 ## 其它常用操作
 + find 命令
+    `Linux find` 命令用来搜索文件，功能非常强大，选项特别多；能支持各种文件系统，前提是要有权限访问。详细可以 `man find`
+    1. 命令格式  
+        ```
+        find [-H] [-L] [-P] [-D debugopts] [-Olevel] [path...] [expression]
+        ```
+    2. 命令参数
+        - -P 默认选项，不查找符号链接（Never follow symbolic links）
+        - -L 查找符号链接
+        - -H 只查找指定的符号链接（后面接着符号链接）
+        - -D Debug选项
+            + help 
+            + tree
+            + stat
+            + opt
+            + rates
+        - -Olevel
+            + 0
+            + 1
+            + 2
+            + 3
+        - [path...] 搜索指定目录
+        - [expression] 表达式，相当丰富；类型多
+    3. 命令表达式
+        表达式可以分为三类：设置项（OPTION）、测试项（TEST）、动作项（ACTION）；这三类可以通过逻辑运算符组合在一起使用，下面是常用的选项
+        - 设置项（OPTION）
+            > All options always return true.  Except for -daystart, -follow and -regextype, the options affect all tests, including tests specified before the option.  This is because the options are processed when the  command  line
+            is  parsed,  while  the  tests  don't do anything until files are examined.  The -daystart, -follow and -regextype options are different in this respect, and have an effect only on tests which appear later in the command
+            line.  Therefore, for clarity, it is best to place them at the beginning of the expression.  A warning is issued if you don't do this.
+            
+            + -d
+            + -daystart
+            + -depth
+            + -follow
+            + -help
+            + -ignore_readdir_race
+            + -maxdepth *levels*
+            + -mount
+            + -noignore_readdir_race
+            + -noleaf
+            + -regextype *type*
+            + -version,--version
+            + -warn, -nowarn
+            + xdev
+        - 测试项（TEST）
+            > Some tests, for example -newerXY and -samefile, allow comparison between the file currently being examined and some reference file specified on the command line.  When these tests are used, the interpretation of the ref‐
+            erence file is determined by the options -H, -L and -P and any previous -follow, but the reference file is only examined once, at the time the command line is parsed.  If the reference file cannot be examined (for  exam‐
+            ple, the stat(2) system call fails for it), an error message is issued, and find exits with a nonzero status.
+
+            + -name
+            + -iname
+            + -path *pattern*
+            + -perm
+                - mode
+                - -mode
+                - /mode
+                - +mode
+            + -prune
+            + -user
+            + -readable
+            + -group
+            + -mtime
+            + -nogroup
+            + -nouser 
+            + -newer
+            + -type *type*
+                - b 块设备文件
+                - d 目录
+                - c 字符设备文件
+                - p 管道文件
+                - l 符号链接文件
+                - f 普通文件
+            + -size *n[cwbkMG]*
+                - b 512-byte blocks
+                - c bytes
+                - w two-byte
+                - k kilobytes
+                - M Megabytes
+                - G Gigabytes
+            + -fstype
+            + -cpio
+        - 动作项（ACTION）
 + tar 命令
     1. 5个独立命令
         - -c 建立压缩档案
@@ -551,4 +757,7 @@ shell 可以用户定义函数，然后在shell脚本中可以随便调用
         -f: 使用档案名字，切记，这个参数是最后一个参数，后面只能接档案名。
 + grep 命令
 + cut 命令
++ sed 命令
+    常用的行编辑工具  
+
 
