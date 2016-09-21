@@ -758,6 +758,35 @@ shell 可以用户定义函数，然后在shell脚本中可以随便调用
 + grep 命令
 + cut 命令
 + sed 命令
-    常用的行编辑工具  
+    常用的行编辑工具，`sed` 是非常强大的，这里只介绍几个常用的命令，其它的可以 `man sed`  
+    1. 文本中匹配字符串替换
+        ```
+        # 将 `old` 替换为 `new`
+        sed -i 's/old/new/g' file
+        ```
+    2. 文本中匹配行替换
+        ```
+        # 将包含 `old_line` 的行替换为 `new_line`, `old_line` 必现从某一行第一个字符开始
+        sed -i '/old_line/c new_line' file
+        ```
+    3. 文本中匹配行删除
+        ```
+        # 删除包含 `string` 的行
+        sed -i '/string/d' file
+        ```
+    4. 配合 `find` 和 `grep` 命令使用
+        ```
+        # 通过 `find` 和 `grep` 命令，我们可以进行批量的操作
+        # 例如，我们通过 `find` 命令查找出来很多文件，需要对这里面的文件进行操作，有两种方式
+        # 1. 使用管道传递过去
+        find -name "*.mk" | xargs sed -i 's/false/true/g'
+        # 2. 使用shell命令拼接
+        sed -i 's/false/true/g' `find -name "*.mk"`
+
+        # 同样的，grep 也可以使用类似的操作
+        sed -i '/oldname/newname/g' `grep -rl "oldname"`
+
+        # 需要特别注意，使用shell命令拼接时，后面命令的输出必须时单行列表输出，切只输出文件名，比如使用 grep 时，需使用 -rl 不能使用 -rn （带了行号，识别错误）
+        ```
 
 
